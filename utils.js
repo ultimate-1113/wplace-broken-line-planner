@@ -75,6 +75,13 @@ function toLocal(px, py, modSize = HOGE) {
   return { chunkX, chunkY, x: Math.floor(localX), y: Math.floor(localY) };
 }
 
+// ⭐ 追加：表示用 “1000 区切りのチャンク座標” を返すヘルパ
+function toChunk1000(px, py) {
+  const t = toLocal(px, py, 1000);
+  // 表示で使うのはチャンク座標のみ（mod1000の x,y は返さない）
+  return { chunkX: t.chunkX, chunkY: t.chunkY };
+}
+
 // 使い方：opts.order = 'auto' | 'a-first' | 'b-first'
 function planPolylineWorld(start, end, slopeSet = SLOPE_SET, opts = {}) {
   const { order = 'auto', roundToInt = true } = opts;
@@ -97,7 +104,14 @@ function planPolylineWorld(start, end, slopeSet = SLOPE_SET, opts = {}) {
       plannedEnd: e,
       polylineWorld: [s, e],
       polylineLocal: [toLocal(s.x, s.y), toLocal(e.x, e.y)],
-      errorPx: { dx: e.x - end.x, dy: e.y - end.y }
+      errorPx: { dx: e.x - end.x, dy: e.y - end.y },
+
+      // ⭐ 追加：1000区切りのチャンク座標（表示用）
+      chunks1000: {
+        start: toChunk1000(s.x, s.y),
+        bend:  null,
+        end:   toChunk1000(e.x, e.y)
+      }
     };
   }
 
@@ -142,7 +156,14 @@ function planPolylineWorld(start, end, slopeSet = SLOPE_SET, opts = {}) {
       toLocal(chosen.bend.x, chosen.bend.y),
       toLocal(chosen.end.x, chosen.end.y)
     ],
-    errorPx: { dx: chosen.end.x - (flippedX ? -x1 : x1), dy: chosen.end.y - y1 }
+    errorPx: { dx: chosen.end.x - (flippedX ? -x1 : x1), dy: chosen.end.y - y1 },
+
+    // ⭐ 追加：1000区切りのチャンク座標（表示用）
+    chunks1000: {
+      start: toChunk1000(startW.x,        startW.y),
+      bend:  toChunk1000(chosen.bend.x,   chosen.bend.y),
+      end:   toChunk1000(chosen.end.x,    chosen.end.y),
+    }
   };
 }
 
@@ -157,3 +178,20 @@ function planFromLatLng(lat1, lng1, lat2, lng2, hoge = HOGE, slopeSet = SLOPE_SE
   );
   return { input: { p1, p2 }, ...plan };
 }
+
+// 必要なら外からも使えるように公開（モジュールでなければ不要）
+window.toChunk1000 = window.toChunk1000 || toChunk1000;
+
+document.getElementById('copyDebugBtn').addEventListener('click', () => {
+  const text = document.getElementById('debug').textContent;
+  if (!text) {
+    alert("コピーするデータがありません。");
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    alert("デバッグデータをコピーしました！");
+  }).catch(err => {
+    console.error("コピーに失敗:", err);
+    alert("コピーに失敗しました。");
+  });
+});

@@ -68,6 +68,7 @@
       <details class="details">
         <summary>デバッグ詳細</summary>
         <pre id="debug"></pre>
+        <button type="button" id="copyDebugBtn" class="primary">📋 デバッグをコピー</button>
       </details>
     </section>
 
@@ -90,11 +91,9 @@
         const { lat: sLat, lng: sLng } = parseWplaceURL(startUrl);
         const { lat: eLat, lng: eLng } = parseWplaceURL(endUrl);
 
-        // world座標を計算
         const p1 = llzToTilePixel(sLat, sLng, 4000);
         const p2 = llzToTilePixel(eLat, eLng, 4000);
 
-        // 四捨五入固定（roundToInt: true）
         const plan2 = planPolylineWorld(
           { x: p1.worldX, y: p1.worldY },
           { x: p2.worldX, y: p2.worldY },
@@ -102,35 +101,33 @@
           { order, roundToInt: true }
         );
 
-        // 始点（ローカル）
-        const sLocal = toLocal(plan2.polylineWorld[0].x, plan2.polylineWorld[0].y, 4000);
+        // ⭐ 始点（4000区切りチャンク + mod4000座標）
+        const s4k = toLocal(plan2.polylineWorld[0].x, plan2.polylineWorld[0].y, 4000);
         document.getElementById('startLocal').textContent =
-          `chunk=(${sLocal.chunkX}, ${sLocal.chunkY})\n(x, y)=(${sLocal.x}, ${sLocal.y})`;
+        `[${s4k.chunkX}, ${s4k.chunkY}] (${s4k.x}, ${s4k.y})`;
 
-        // 折れ点（ローカル）＋リンク
-        const bLocal = plan2.bendLocal;
+        // ⭐ 折れ点
+        const b4k = plan2.bendLocal;
         document.getElementById('bendLocal').textContent =
-          `chunk=(${bLocal.chunkX}, ${bLocal.chunkY})\n(x, y)=(${bLocal.x}, ${bLocal.y})`;
+        `[${b4k.chunkX}, ${b4k.chunkY}] (${b4k.x}, ${b4k.y})`;
         document.getElementById('bendLink').href =
-          toWplaceURL(plan2.bend.x, plan2.bend.y, 4000, 18);
+        toWplaceURL(plan2.bend.x, plan2.bend.y, 4000, 18);
 
-        // 終点（ローカル）＋リンク
-        const eLocal = toLocal(plan2.plannedEnd.x, plan2.plannedEnd.y, 4000);
+        // ⭐ 終点
+        const e4k = toLocal(plan2.plannedEnd.x, plan2.plannedEnd.y, 4000);
         document.getElementById('endLocal').textContent =
-          `chunk=(${eLocal.chunkX}, ${eLocal.chunkY})\n(x, y)=(${eLocal.x}, ${eLocal.y})`;
+        `[${e4k.chunkX}, ${e4k.chunkY}] (${e4k.x}, ${e4k.y})`;
         document.getElementById('endLink').href =
-          toWplaceURL(plan2.plannedEnd.x, plan2.plannedEnd.y, 4000, 18);
+        toWplaceURL(plan2.plannedEnd.x, plan2.plannedEnd.y, 4000, 18);
 
-        // 誤差は別枠
+        // 誤差
         const dx = Math.round(plan2.errorPx.dx);
         const dy = Math.round(plan2.errorPx.dy);
         const len = Math.hypot(dx, dy).toFixed(3);
         document.getElementById('errorBox').textContent =
           `dx = ${dx}\ndy = ${dy}\n|error| = ${len}`;
 
-        // debug
         document.getElementById('debug').textContent = JSON.stringify(plan2, null, 2);
-
         resultSec.hidden = false;
       } catch (err) {
         alert('URLの解析または計算でエラー: ' + err.message);
