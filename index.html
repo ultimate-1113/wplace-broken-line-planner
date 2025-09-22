@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>wplace 折れ点プランナー</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>wplace 折れ点プランナー</h1>
+
+    <form id="plan-form" class="card">
+      <div class="field">
+        <label for="startUrlInput">始点URL</label>
+        <input id="startUrlInput" name="startUrl" type="url"
+               placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
+      </div>
+
+      <div class="field">
+        <label for="endUrlInput">終点予定地URL</label>
+        <input id="endUrlInput" name="endUrl" type="url"
+               placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="order">折る順序</label>
+          <select id="order" name="order">
+            <option value="auto" selected>自動（誤差が小さい方）</option>
+            <option value="a-first">a先 → b</option>
+            <option value="b-first">b先 → a</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="primary">計算する</button>
+      <p class="note">※URLの <code>lat</code> と <code>lng</code> のみ参照します。<code>hoge</code> は 4000 固定。</p>
+    </form>
+
+    <section id="result" class="card" hidden>
+      <h2>結果</h2>
+
+      <div class="grid">
+        <div class="box">
+          <h3>始点（ローカル座標）</h3>
+          <pre id="startLocal"></pre>
+        </div>
+
+        <div class="box">
+          <h3>折れ点（ローカル座標）</h3>
+          <pre id="bendLocal"></pre>
+          <a id="bendLink" class="link" target="_blank" rel="noopener">折れ点を地図で開く</a>
+        </div>
+
+        <div class="box">
+          <h3>終点（ローカル座標）</h3>
+          <pre id="endLocal"></pre>
+          <a id="endLink" class="link" target="_blank" rel="noopener">終点を地図で開く</a>
+        </div>
+      </div>
+
+      <div class="box" style="margin-top:12px;">
+        <h3>誤差（plannedEnd − 目標終点, px）</h3>
+        <pre id="errorBox"></pre>
+      </div>
+
+      <details class="details">
+        <summary>デバッグ詳細</summary>
+        <pre id="debug"></pre>
+      </details>
+    </section>
+
+    <footer class="muted">© wplace沖ノ鳥島開発 技術部・道路公社</footer>
+  </main>
+
+  <script src="./utils.js"></script>
+  <script>
+    const form = document.getElementById('plan-form');
+    const resultSec = document.getElementById('result');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const startUrl = document.getElementById('startUrlInput').value.trim();
+      const endUrl   = document.getElementById('endUrlInput').value.trim();
+      const order    = document.getElementById('order').value;
+
+      try {
+        const { lat: sLat, lng: sLng } = parseWplaceURL(startUrl);
+        const { lat: eLat, lng: eLng } = parseWplaceURL(endUrl);
+
+        // world座標を計算
+        const p1 = llzToTilePixel(sLat, sLng, 4000);
+        const p2 = llzToTilePixel(eLat, eLng, 4000);
+
+        // 四捨五入固定（roundToInt: true）
+        const plan2 = planPolylineWorld(
+          { x: p1.worldX, y: p1.worldY },
+          { x: p2.worldX, y: p2.worldY },
+          SLOPE_SET,
+          { order, roundToInt: true }
+        );
+
+        // 始点（ローカル）
+        const sLocal = toLocal(plan2.polylineWorld[0].x, plan2.polylineWorld[0].y, 4000);
+        document.getElementById('startLocal').textContent =
+          `chunk=(${sLocal.chunkX}, ${sLocal.chunkY})\n(x, y)=(${sLocal.x}, ${sLocal.y})`;
+
+        // 折れ点（ローカル）＋リンク
+        const bLocal = plan2.bendLocal;
+        document.getElementById('bendLocal').textContent =
+          `chunk=(${bLocal.chunkX}, ${bLocal.chunkY})\n(x, y)=(${bLocal.x}, ${bLocal.y})`;
+        document.getElementById('bendLink').href =
+          toWplaceURL(plan2.bend.x, plan2.bend.y, 4000, 18);
+
+        // 終点（ローカル）＋リンク
+        const eLocal = toLocal(plan2.plannedEnd.x, plan2.plannedEnd.y, 4000);
+        document.getElementById('endLocal').textContent =
+          `chunk=(${eLocal.chunkX}, ${eLocal.chunkY})\n(x, y)=(${eLocal.x}, ${eLocal.y})`;
+        document.getElementById('endLink').href =
+          toWplaceURL(plan2.plannedEnd.x, plan2.plannedEnd.y, 4000, 18);
+
+        // 誤差は別枠
+        const dx = Math.round(plan2.errorPx.dx);
+        const dy = Math.round(plan2.errorPx.dy);
+        const len = Math.hypot(dx, dy).toFixed(3);
+        document.getElementById('errorBox').textContent =
+          `dx = ${dx}\ndy = ${dy}\n|error| = ${len}`;
+
+        // debug
+        document.getElementById('debug').textContent = JSON.stringify(plan2, null, 2);
+
+        resultSec.hidden = false;
+      } catch (err) {
+        alert('URLの解析または計算でエラー: ' + err.message);
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
