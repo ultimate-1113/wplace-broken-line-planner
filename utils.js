@@ -51,7 +51,7 @@ function parseWplaceURL(urlStr) {
 // ===== ルーティング計画 =====
 
 // 傾き候補
-const SLOPE_SET = [1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5];
+const SLOPE_SET = [1/10, 1/9, 1/8, 1/7, 1/6, 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // m の下側aと上側bを選ぶ
 function chooseSlopes(m, set = SLOPE_SET) {
