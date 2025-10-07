@@ -116,14 +116,16 @@ h3 { font-size: 1rem;  margin: 0 0 8px; }
 .field { margin-bottom: 12px; }
 label { display: block; font-size: .9rem; color: var(--muted); margin-bottom: 6px; }
 
-input[type="url"], select {
+select {
   width: 100%;
+  box-sizing: border-box;          /* ← 幅のずれを防ぐ最重要行 */
   background: #0f1430;
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 10px 12px;              /* ← 右の余白は矢印ぶん確保されるのでOK */
   outline: none;
+  font: inherit;
 }
 input[type="url"]:focus, select:focus { border-color: var(--accent); }
 
