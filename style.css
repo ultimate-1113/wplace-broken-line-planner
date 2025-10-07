@@ -15,15 +15,39 @@ html, body {
   background: radial-gradient(1200px 600px at 20% -10%, #162140, #0a0f20 60%);
   color: var(--text);
   font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+  min-height: 100%;
 }
 
+/* ===== ヘッダ固定 ===== */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(180deg, rgba(11,16,32,.95), rgba(11,16,32,.6));
+  backdrop-filter: saturate(150%) blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner { padding: 10px 20px; }
+.app-main { padding-top: 12px; }
+
+/* ===== フッター固定 ===== */
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  background: rgba(11,16,32,.9);
+  border-top: 1px solid var(--border);
+  padding: 6px 0;
+}
+
+/* ===== レイアウト ===== */
 .container {
   max-width: 980px;
-  margin: 48px auto;
-  padding: 0 20px;
+  margin: 0 auto;
+  padding: 0 20px 64px; /* 下に余白：固定フッターと重ならない */
 }
 
-h1 { font-size: 1.6rem; margin: 0 0 16px; }
+h1 { font-size: 1.3rem; margin: 0; }
 h2 { font-size: 1.2rem; margin: 0 0 12px; }
 h3 { font-size: 1rem; margin: 0 0 8px; }
 
@@ -33,7 +57,7 @@ h3 { font-size: 1rem; margin: 0 0 8px; }
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,.25);
-  margin-bottom: 16px;
+  margin: 12px 0 16px;
 }
 
 .field { margin-bottom: 12px; }
@@ -62,28 +86,39 @@ button.primary:hover { filter: brightness(1.05); }
 
 .note { color: var(--muted); font-size: .85rem; margin: 8px 0 0; }
 
-.grid {
+/* 結果グリッド：モバイルで縦積み、広い画面で2→3カラム */
+.result-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  grid-template-columns: 1fr;
 }
+@media (min-width: 600px) {
+  .result-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (min-width: 900px) {
+  .result-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
 .box {
   background: #0e1534;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
 }
+
 pre {
   margin: 0;
   padding: 10px;
   background: #0a102a;
   border: 1px dashed #2a3b6f;
   border-radius: 10px;
-  overflow-x: auto;
+  /* 横スクロール不要に */
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .link { display: inline-block; margin-top: 8px; color: var(--accent); word-break: break-all; }
-.muted { color: var(--muted); text-align: center; margin-top: 20px; }
+.muted { color: var(--muted); text-align: center; margin: 0; }
 
 .details summary { cursor: pointer; }

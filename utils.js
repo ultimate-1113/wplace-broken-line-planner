@@ -1,45 +1,21 @@
-// ===== 基本パラメータ =====
-const HOGE = 4000; // 固定
+// =====================
+// wplace Utility Module
+// =====================
 
-// ===== 変換ユーティリティ =====
-function llzToTilePixel(lat, lng, hoge = HOGE) {
-  const tileSize = 1000;
-  const zoom = 9;
-  const scale = hoge * Math.pow(2, zoom);
+// ===== 定数 =====
+const MOD_CHUNK = 4000;   // チャンク（mod4000）
+const MOD_TILE  = 1000;   // タイル（mod1000）
+const ZOOM_BASE = 9;      // 内部座標系固定ズーム（wplace仕様）
+const SCALE     = MOD_CHUNK * Math.pow(2, ZOOM_BASE); // = 4000 * 2^9 = 2048000
 
-  const worldX = ((lng + 180) / 360) * scale;
-  const sinLat = Math.sin((lat * Math.PI) / 180);
-  const worldY =
-    (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * scale;
-
-  const TLX = Math.floor(worldX / tileSize);
-  const TLY = Math.floor(worldY / tileSize);
-  const PxX = Math.floor(worldX - TLX * tileSize);
-  const PxY = Math.floor(worldY - TLY * tileSize);
-
-  return { TLX, TLY, PxX, PxY, worldX, worldY };
-}
-
-// world(px) -> 緯度経度
-function worldToLatLng(worldX, worldY, hoge = HOGE) {
-  const zoom = 9;
-  const scale = hoge * Math.pow(2, zoom);
-  const lng = (worldX / scale) * 360 - 180;
-  const n = Math.PI - 2 * Math.PI * (worldY / scale);
-  const lat = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
-  return { lat, lng };
-}
-
-// wplace URL 作成
-function toWplaceURL(worldX, worldY, hoge = HOGE, zoom = 18) {
-  const { lat, lng } = worldToLatLng(worldX, worldY, hoge);
-  return `https://wplace.live/?lat=${lat}&lng=${lng}&zoom=${zoom}`;
-}
-
-// URL から lat/lng を取り出す
+// ===== URL → lat/lng 抽出 =====
 function parseWplaceURL(urlStr) {
   let url;
-  try { url = new URL(urlStr); } catch { throw new Error('URL形式が不正です'); }
+  try {
+    url = new URL(urlStr);
+  } catch {
+    throw new Error('URL形式が不正です');
+  }
   const lat = parseFloat(url.searchParams.get('lat'));
   const lng = parseFloat(url.searchParams.get('lng'));
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
@@ -48,26 +24,45 @@ function parseWplaceURL(urlStr) {
   return { lat, lng };
 }
 
-// ===== ルーティング計画 =====
-
-// 傾き候補
-const SLOPE_SET = [1/10, 1/9, 1/8, 1/7, 1/6, 1/5, 1/4, 1/3, 1/2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-// m の下側aと上側bを選ぶ
-function chooseSlopes(m, set = SLOPE_SET) {
-  let closest = set.reduce((best, s) =>
-    Math.abs(s - m) < Math.abs(best - m) ? s : best, set[0]);
-  if (Math.abs(closest - m) < 1e-9) return [closest, closest];
-
-  const below = set.filter(s => s <= m);
-  const above = set.filter(s => s >= m);
-  const a = below.length ? below[below.length - 1] : set[0];
-  const b = above.length ? above[0] : set[set.length - 1];
-  return a <= b ? [a, b] : [b, a];
+// ===== world(px) → 緯度経度 =====
+function worldToLatLng(worldX, worldY) {
+  const lng = (worldX / SCALE) * 360 - 180;
+  const n = Math.PI - 2 * Math.PI * (worldY / SCALE);
+  const lat = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+  return { lat, lng };
 }
 
-// world -> mod4000
-function toLocal(px, py, modSize = HOGE) {
+// ===== 緯度経度 → world(px) + チャンク/タイル座標 =====
+function llzToWorldPixel(lat, lng) {
+  const sinLat = Math.sin((lat * Math.PI) / 180);
+  const worldX = ((lng + 180) / 360) * SCALE;
+  const worldY =
+    (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * SCALE;
+
+  const chunk = toLocal(worldX, worldY, MOD_CHUNK);
+  const tile  = toLocal(worldX, worldY, MOD_TILE);
+
+  return {
+    // チャンク (mod4000)
+    chunkX: chunk.chunkX,
+    chunkY: chunk.chunkY,
+    cLocalX: chunk.x,
+    cLocalY: chunk.y,
+
+    // タイル (mod1000)
+    tileX: tile.chunkX,
+    tileY: tile.chunkY,
+    tLocalX: tile.x,
+    tLocalY: tile.y,
+
+    // ワールド座標
+    worldX,
+    worldY,
+  };
+}
+
+// ===== world(px) → mod座標（チャンクやタイル） =====
+function toLocal(px, py, modSize) {
   const chunkX = Math.floor(px / modSize);
   const chunkY = Math.floor(py / modSize);
   const localX = ((px % modSize) + modSize) % modSize;
@@ -75,14 +70,30 @@ function toLocal(px, py, modSize = HOGE) {
   return { chunkX, chunkY, x: Math.floor(localX), y: Math.floor(localY) };
 }
 
-// ⭐ 追加：表示用 “1000 区切りのチャンク座標” を返すヘルパ
-function toChunk1000(px, py) {
-  const t = toLocal(px, py, 1000);
-  // 表示で使うのはチャンク座標のみ（mod1000の x,y は返さない）
-  return { chunkX: t.chunkX, chunkY: t.chunkY };
+// ===== wplace URL 生成 =====
+function toWplaceURL(worldX, worldY, zoom = 18) {
+  const { lat, lng } = worldToLatLng(worldX, worldY);
+  return `https://wplace.live/?lat=${lat}&lng=${lng}&zoom=${zoom}`;
 }
 
-// 使い方：opts.order = 'auto' | 'a-first' | 'b-first'
+// ===== 傾きセット =====
+const SLOPE_SET = [
+  1/10, 1/9, 1/8, 1/7, 1/6, 1/5, 1/4, 1/3, 1/2,
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+];
+
+// ===== 2点間ポリライン計画 =====
+function chooseSlopes(m, set = SLOPE_SET) {
+  let closest = set.reduce((best, s) =>
+    Math.abs(s - m) < Math.abs(best - m) ? s : best, set[0]);
+  if (Math.abs(closest - m) < 1e-9) return [closest, closest];
+  const below = set.filter(s => s <= m);
+  const above = set.filter(s => s >= m);
+  const a = below.length ? below[below.length - 1] : set[0];
+  const b = above.length ? above[0] : set[set.length - 1];
+  return a <= b ? [a, b] : [b, a];
+}
+
 function planPolylineWorld(start, end, slopeSet = SLOPE_SET, opts = {}) {
   const { order = 'auto', roundToInt = true } = opts;
 
@@ -105,13 +116,6 @@ function planPolylineWorld(start, end, slopeSet = SLOPE_SET, opts = {}) {
       polylineWorld: [s, e],
       polylineLocal: [toLocal(s.x, s.y), toLocal(e.x, e.y)],
       errorPx: { dx: e.x - end.x, dy: e.y - end.y },
-
-      // ⭐ 追加：1000区切りのチャンク座標（表示用）
-      chunks1000: {
-        start: toChunk1000(s.x, s.y),
-        bend:  null,
-        end:   toChunk1000(e.x, e.y)
-      }
     };
   }
 
@@ -148,50 +152,14 @@ function planPolylineWorld(start, end, slopeSet = SLOPE_SET, opts = {}) {
   return {
     a, b, Na, Nb,
     bend: chosen.bend,
-    bendLocal: toLocal(chosen.bend.x, chosen.bend.y),
+    bendLocal: toLocal(chosen.bend.x, chosen.bend.y, MOD_CHUNK),
     plannedEnd: chosen.end,
     polylineWorld: [startW, chosen.bend, chosen.end],
     polylineLocal: [
-      toLocal(startW.x, startW.y),
-      toLocal(chosen.bend.x, chosen.bend.y),
-      toLocal(chosen.end.x, chosen.end.y)
+      toLocal(startW.x, startW.y, MOD_CHUNK),
+      toLocal(chosen.bend.x, chosen.bend.y, MOD_CHUNK),
+      toLocal(chosen.end.x, chosen.end.y, MOD_CHUNK)
     ],
     errorPx: { dx: chosen.end.x - (flippedX ? -x1 : x1), dy: chosen.end.y - y1 },
-
-    // ⭐ 追加：1000区切りのチャンク座標（表示用）
-    chunks1000: {
-      start: toChunk1000(startW.x,        startW.y),
-      bend:  toChunk1000(chosen.bend.x,   chosen.bend.y),
-      end:   toChunk1000(chosen.end.x,    chosen.end.y),
-    }
   };
 }
-
-function planFromLatLng(lat1, lng1, lat2, lng2, hoge = HOGE, slopeSet = SLOPE_SET) {
-  const p1 = llzToTilePixel(lat1, lng1, hoge);
-  const p2 = llzToTilePixel(lat2, lng2, hoge);
-  const plan = planPolylineWorld(
-    { x: p1.worldX, y: p1.worldY },
-    { x: p2.worldX, y: p2.worldY },
-    slopeSet,
-    { order: 'auto', roundToInt: true }
-  );
-  return { input: { p1, p2 }, ...plan };
-}
-
-// 必要なら外からも使えるように公開（モジュールでなければ不要）
-window.toChunk1000 = window.toChunk1000 || toChunk1000;
-
-document.getElementById('copyDebugBtn').addEventListener('click', () => {
-  const text = document.getElementById('debug').textContent;
-  if (!text) {
-    alert("コピーするデータがありません。");
-    return;
-  }
-  navigator.clipboard.writeText(text).then(() => {
-    alert("デバッグデータをコピーしました！");
-  }).catch(err => {
-    console.error("コピーに失敗:", err);
-    alert("コピーに失敗しました。");
-  });
-});
