@@ -1,4 +1,5 @@
 :root {
+  /* colors */
   --bg: #0b1020;
   --card: #11172b;
   --muted: #a4b0d0;
@@ -6,6 +7,10 @@
   --accent: #5aa0ff;
   --accent-2: #42d6a4;
   --border: #223056;
+
+  /* layout */
+  --header-h: 56px;   /* ヘッダー高さ（48〜64で微調整可） */
+  --footer-h: 48px;   /* フッター高さ */
 }
 
 * { box-sizing: border-box; }
@@ -20,36 +25,80 @@ html, body {
 
 /* ===== ヘッダ固定 ===== */
 .app-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  position: fixed;                    /* ← sticky ではなく fixed */
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);            /* 高さを明示して安定化 */
+  z-index: 100;
   background: linear-gradient(180deg, rgba(11,16,32,.95), rgba(11,16,32,.6));
   backdrop-filter: saturate(150%) blur(6px);
   border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
 }
-.header-inner { padding: 10px 20px; }
-.app-main { padding-top: 12px; }
+.header-inner {
+  height: 100%;
+  display: flex;
+  align-items: center;                /* ← 縦の真ん中 */
+  justify-content: flex-start;        /* 左寄せ */
+  padding: 0 20px;                    /* 上下0・左右のみ */
+}
 
-/* ===== フッター固定 ===== */
+/* ヘッダー分の余白を main に確保（被り防止） */
+.app-main { padding-top: calc(var(--header-h) + 12px); }
+
+/* ===== フッター固定（Safari対応・透過） ===== */
 .app-footer {
   position: fixed;
   bottom: 0;
-  left: 0; right: 0;
-  background: rgba(11,16,32,.9);
+  left: 0;
+  width: 100%;
+  background: rgba(11, 16, 32, 0.85);   /* 若干の透過 */
   border-top: 1px solid var(--border);
-  padding: 6px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: var(--footer-h);
+  padding: 0;
+  z-index: 100;
+  -webkit-backdrop-filter: saturate(150%) blur(6px); /* Safari対策 */
+  backdrop-filter: saturate(150%) blur(6px);
+}
+
+/* Safari・モバイルブラウザの「タブ表示領域」対策 */
+@supports (padding: max(0px)) {
+  .app-footer {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
+
+/* 内部テキスト配置 */
+.app-footer .container {
+  max-width: 980px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.app-footer .muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* ===== レイアウト ===== */
 .container {
   max-width: 980px;
   margin: 0 auto;
-  padding: 0 20px 64px; /* 下に余白：固定フッターと重ならない */
+  padding: 0 20px calc(var(--footer-h) + 64px); /* 下余白：固定フッターと重ならない */
 }
 
-h1 { font-size: 1.3rem; margin: 0; }
+h1 { font-size: 1.3rem; margin: 0; line-height: 1; } /* 中央ズレ防止で行高固定 */
 h2 { font-size: 1.2rem; margin: 0 0 12px; }
-h3 { font-size: 1rem; margin: 0 0 8px; }
+h3 { font-size: 1rem;  margin: 0 0 8px; }
 
 .card {
   background: var(--card);
@@ -62,6 +111,7 @@ h3 { font-size: 1rem; margin: 0 0 8px; }
 
 .field { margin-bottom: 12px; }
 label { display: block; font-size: .9rem; color: var(--muted); margin-bottom: 6px; }
+
 input[type="url"], select {
   width: 100%;
   background: #0f1430;
@@ -112,12 +162,11 @@ pre {
   background: #0a102a;
   border: 1px dashed #2a3b6f;
   border-radius: 10px;
-  /* 横スクロール不要に */
-  white-space: pre-wrap;
+  white-space: pre-wrap;   /* 横スクロール不要に */
   word-break: break-all;
 }
 
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .link { display: inline-block; margin-top: 8px; color: var(--accent); word-break: break-all; }
 .muted { color: var(--muted); text-align: center; margin: 0; }
 

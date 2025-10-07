@@ -7,98 +7,109 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
+
+  <!-- ===== 固定ヘッダー ===== -->
   <header class="app-header">
-    <div class="container header-inner">
+    <div class="header-inner">
       <h1>wplace 折れ点プランナー</h1>
     </div>
   </header>
 
-  <main class="container app-main">
-    <form id="plan-form" class="card">
-      <div class="field">
-        <label for="startUrlInput">始点URL</label>
-        <input id="startUrlInput" name="startUrl" type="url"
-               placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
-      </div>
+  <!-- ===== メインコンテンツ ===== -->
+  <main class="app-main">
+    <div class="container">
 
-      <div class="field">
-        <label for="endUrlInput">終点予定地URL</label>
-        <input id="endUrlInput" name="endUrl" type="url"
-               placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
-      </div>
-
-      <div class="row">
+      <!-- 入力フォーム -->
+      <form id="plan-form" class="card">
         <div class="field">
-          <label for="order">折る順序</label>
-          <select id="order" name="order">
-            <option value="auto" selected>自動（誤差が小さい方）</option>
-            <option value="a-first">始点側の傾きを緩やかにする</option>
-            <option value="b-first">始点側の傾きを急にする</option>
-          </select>
-        </div>
-      </div>
-
-      <button type="submit" class="primary">計算する</button>
-      <p class="note">※URLの <code>lat</code> と <code>lng</code> のみ参照します。</p>
-    </form>
-
-    <section id="result" class="card" hidden>
-      <h2>結果</h2>
-
-      <div class="grid result-grid">
-        <!-- 始点 -->
-        <div class="box">
-          <h3>始点：[チャンク]（座標）</h3>
-          <pre id="startLocal"></pre>
+          <label for="startUrlInput">始点URL</label>
+          <input id="startUrlInput" name="startUrl" type="url"
+                 placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
         </div>
 
-        <!-- 始点側 傾き -->
-        <div class="box">
-          <h3>始点側の傾き</h3>
-          <pre id="slopeStart"></pre>
+        <div class="field">
+          <label for="endUrlInput">終点予定地URL</label>
+          <input id="endUrlInput" name="endUrl" type="url"
+                 placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
         </div>
 
-        <!-- 折れ点 -->
-        <div class="box">
-          <h3>折れ点：[チャンク]（座標）</h3>
-          <pre id="bendLocal"></pre>
-          <a id="bendLink" class="link" target="_blank" rel="noopener">折れ点を地図で開く</a>
+        <div class="row">
+          <div class="field">
+            <label for="order">折る順序</label>
+            <select id="order" name="order">
+              <option value="auto" selected>自動（誤差が小さい方）</option>
+              <option value="a-first">始点側の傾きを緩やかにする</option>
+              <option value="b-first">始点側の傾きを急にする</option>
+            </select>
+          </div>
         </div>
 
-        <!-- 終点側 傾き -->
-        <div class="box">
-          <h3>終点側の傾き</h3>
-          <pre id="slopeEnd"></pre>
+        <button type="submit" class="primary">計算する</button>
+        <p class="note">※URLの <code>lat</code> と <code>lng</code> のみ参照します。</p>
+      </form>
+
+      <!-- 結果表示 -->
+      <section id="result" class="card" hidden>
+        <h2>結果</h2>
+
+        <div class="result-grid">
+          <!-- 始点 -->
+          <div class="box">
+            <h3>始点：[チャンク]（座標）</h3>
+            <pre id="startLocal"></pre>
+          </div>
+
+          <!-- 始点側 傾き -->
+          <div class="box">
+            <h3>始点側の傾き</h3>
+            <pre id="slopeStart"></pre>
+          </div>
+
+          <!-- 折れ点 -->
+          <div class="box">
+            <h3>折れ点：[チャンク]（座標）</h3>
+            <pre id="bendLocal"></pre>
+            <a id="bendLink" class="link" target="_blank" rel="noopener">折れ点を地図で開く</a>
+          </div>
+
+          <!-- 終点側 傾き -->
+          <div class="box">
+            <h3>終点側の傾き</h3>
+            <pre id="slopeEnd"></pre>
+          </div>
+
+          <!-- 終点 -->
+          <div class="box">
+            <h3>終点：[チャンク]（座標）</h3>
+            <pre id="endLocal"></pre>
+            <a id="endLink" class="link" target="_blank" rel="noopener">終点を地図で開く</a>
+          </div>
         </div>
 
-        <!-- 終点 -->
-        <div class="box">
-          <h3>終点：[チャンク]（座標）</h3>
-          <pre id="endLocal"></pre>
-          <a id="endLink" class="link" target="_blank" rel="noopener">終点を地図で開く</a>
-        </div>
-      </div>
+        <details class="details">
+          <summary>デバッグ詳細</summary>
+          <pre id="debug"></pre>
+          <button type="button" id="copyDebugBtn" class="primary">📋 デバッグをコピー</button>
+        </details>
+      </section>
 
-      <details class="details">
-        <summary>デバッグ詳細</summary>
-        <pre id="debug"></pre>
-        <button type="button" id="copyDebugBtn" class="primary">📋 デバッグをコピー</button>
-      </details>
-    </section>
+    </div>
   </main>
 
+  <!-- ===== 固定フッター ===== -->
   <footer class="app-footer">
     <div class="container">
       <p class="muted">© wplace沖ノ鳥島開発 技術部・道路公社</p>
     </div>
   </footer>
 
+  <!-- ===== スクリプト ===== -->
   <script src="./utils.js"></script>
   <script>
     const form = document.getElementById('plan-form');
     const resultSec = document.getElementById('result');
 
-    // 10, 9, ..., 1/10 を分数表示するための表
+    // 傾きの分数表記対応
     const FRACTIONS = [
       [10,1],[9,1],[8,1],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1],[1,1],
       [1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[1,8],[1,9],[1,10]
@@ -128,7 +139,6 @@
         const { lat: sLat, lng: sLng } = parseWplaceURL(startUrl);
         const { lat: eLat, lng: eLng } = parseWplaceURL(endUrl);
 
-        // ✅ 統合関数へ切替
         const p1 = llzToWorldPixel(sLat, sLng);
         const p2 = llzToWorldPixel(eLat, eLng);
 
@@ -139,28 +149,29 @@
           { order, roundToInt: true }
         );
 
-        // 表示：チャンク（mod4000）
+        // 始点
         const s4k = toLocal(plan2.polylineWorld[0].x, plan2.polylineWorld[0].y, 4000);
         document.getElementById('startLocal').textContent =
           `[${s4k.chunkX}, ${s4k.chunkY}] (${s4k.x}, ${s4k.y})`;
 
+        // 折れ点
         const b4k = plan2.bendLocal;
         document.getElementById('bendLocal').textContent =
           `[${b4k.chunkX}, ${b4k.chunkY}] (${b4k.x}, ${b4k.y})`;
         document.getElementById('bendLink').href =
           toWplaceURL(plan2.bend.x, plan2.bend.y, 18);
 
+        // 終点
         const e4k = toLocal(plan2.plannedEnd.x, plan2.plannedEnd.y, 4000);
         document.getElementById('endLocal').textContent =
           `[${e4k.chunkX}, ${e4k.chunkY}] (${e4k.x}, ${e4k.y})`;
         document.getElementById('endLink').href =
           toWplaceURL(plan2.plannedEnd.x, plan2.plannedEnd.y, 18);
 
-        // 傾き（分数表記、符号付き）
+        // 傾き
         const sPt = plan2.polylineWorld[0];
         const bPt = plan2.polylineWorld[1];
         const ePt = plan2.polylineWorld[2];
-
         const slopeStart = (bPt.x === sPt.x) ? Infinity : (bPt.y - sPt.y) / (bPt.x - sPt.x);
         const slopeEnd   = (ePt.x === bPt.x) ? Infinity : (ePt.y - bPt.y) / (ePt.x - bPt.x);
 
