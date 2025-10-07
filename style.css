@@ -63,12 +63,30 @@ html, body {
   backdrop-filter: saturate(150%) blur(6px);
 }
 
-/* Safari・モバイルブラウザの「タブ表示領域」対策 */
+/* === モバイルでフッター分の下余白を多めに確保（Safe Area 対応） === */
 @supports (padding: max(0px)) {
-  .app-footer {
-    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  /* すべての環境でベースの余白を Safe Area 対応に */
+  .container {
+    padding-bottom: calc(
+      var(--footer-h) + max(env(safe-area-inset-bottom), 0px) + 64px
+    );
   }
 }
+
+/* タッチ端末（iOS/Android）ではさらに少しだけ余白を増やす */
+@media (hover: none) and (pointer: coarse) {
+  .container {
+    padding-bottom: calc(
+      var(--footer-h) + max(env(safe-area-inset-bottom), 0px) + 96px
+    );
+  }
+}
+
+/* アンカーや details 直下にスクロールしたときもフッターに隠れないように */
+.card, .details, section, [id] {
+  scroll-margin-bottom: calc(var(--footer-h) + 24px);
+}
+
 
 /* 内部テキスト配置 */
 .app-footer .container {
