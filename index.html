@@ -46,7 +46,6 @@
         </div>
 
         <button type="submit" class="primary">計算する</button>
-        <p class="note">※URLの <code>lat</code> と <code>lng</code> のみ参照します。</p>
       </form>
 
       <!-- 結果表示 -->
@@ -88,9 +87,8 @@
         </div>
 
         <details class="details">
-          <summary>デバッグ詳細</summary>
+          <summary>詳細</summary>
           <pre id="debug"></pre>
-          <button type="button" id="copyDebugBtn" class="primary">📋 デバッグをコピー</button>
         </details>
       </section>
 
@@ -179,9 +177,11 @@
         document.getElementById('slopeStart').textContent = formatSlopeSigned(slopeStart);
         document.getElementById('slopeEnd').textContent   = formatSlopeSigned(slopeEnd);
 
-        // デバッグ
-        document.getElementById('debug').textContent = JSON.stringify(plan2, null, 2);
+        // ---- デバッグ出力 ----
+        const debugText = buildDebugText(plan2);
+        document.getElementById('debug').textContent = debugText;
         resultSec.hidden = false;
+
       } catch (err) {
         alert('URLの解析または計算でエラー: ' + err.message);
         console.error(err);

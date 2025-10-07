@@ -163,3 +163,38 @@ function planPolylineWorld(start, end, slopeSet = SLOPE_SET, opts = {}) {
     errorPx: { dx: chosen.end.x - (flippedX ? -x1 : x1), dy: chosen.end.y - y1 },
   };
 }
+
+function buildDebugText(plan2) {
+  const sPt = plan2.polylineWorld[0];
+  const bPt = plan2.polylineWorld[1];
+  const ePt = plan2.polylineWorld[2];
+
+  const c4 = (pt) => toLocal(pt.x, pt.y, 4000);
+  const t1 = (pt) => toLocal(pt.x, pt.y, 1000);
+
+  const fmt = (label, pt) => {
+    const c = c4(pt), t = t1(pt);
+    return [
+      `＜${label}＞`,
+      `世界座標: (${pt.x}, ${pt.y})`,
+      `チャンク座標: [${c.chunkX}, ${c.chunkY}] (${c.x}, ${c.y})`,
+      `タイル座標:  [${t.chunkX}, ${t.chunkY}] (${t.x}, ${t.y})`
+    ].join('\n');
+  };
+
+  const dx = Math.round(plan2.errorPx.dx);
+  const dy = Math.round(plan2.errorPx.dy);
+
+  return [
+    `傾きaで進むx方向の距離：${plan2.Na}`,
+    `傾きbで進むx方向の距離：${plan2.Nb}`,
+    '',
+    fmt('始点', sPt),
+    '',
+    fmt('折れ点', bPt),
+    '',
+    fmt('終点', ePt),
+    '',
+    `終点誤差（x方向：${dx} , y方向：${dy}）`
+  ].join('\n');
+}
