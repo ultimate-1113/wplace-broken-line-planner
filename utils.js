@@ -8,6 +8,12 @@ const MOD_TILE  = 1000;   // タイル（mod1000）
 const ZOOM_BASE = 9;      // 内部座標系固定ズーム（wplace仕様）
 const SCALE     = MOD_CHUNK * Math.pow(2, ZOOM_BASE); // = 4000 * 2^9 = 2048000
 
+const MAP_CHUNK = 13;                 // 道路地図の1チャンク単位
+const MAP_SCALE = MAP_CHUNK * (2 ** ZOOM_BASE); // = 6656 map幅を world(px) に換算
+const ORIGIN = llzToWorldPixel(25.170344214459675, 137.55629849677734); // 左上原点
+const MAP_TOP_LEFT = { lat: 25.1662077952603, lng: 137.17010709052732 };
+const MAP_BOTTOM_RIGHT = { lat: 24.373758784675584, lng: 138.43133755927732 };
+
 // ===== URL → lat/lng 抽出 =====
 function parseWplaceURL(urlStr) {
   let url;
@@ -197,4 +203,34 @@ function buildDebugText(plan2) {
     '',
     `終点誤差（x方向：${dx} , y方向：${dy}）`
   ].join('\n');
+}
+
+function shiftWorldXForLocal(worldX) {
+  if (worldX < ORIGIN.worldX) worldX += MAP_SCALE;
+  return worldX;
+}
+
+function roadUrlToWplaceUrl(roadUrl, outZoom = 15) {
+  if (!isWithinRoadMapBounds(roadUrl))
+    throw new Error("入力URLは道路地図範囲外です。");
+
+  const { lat, lng } = parseWplaceURL(roadUrl);
+  let { worldX, worldY } = llzToWorldPixel(lat, lng);
+  const shiftedX = shiftWorldXForLocal(worldX);
+
+  const u = (shiftedX - ORIGIN.worldX) * (MAP_CHUNK / MOD_CHUNK);
+  const v = (worldY   - ORIGIN.worldY) * (MAP_CHUNK / MOD_CHUNK);
+
+  const Xw_out = ORIGIN.worldX + u * (MOD_CHUNK / MAP_CHUNK);
+  const Yw_out = ORIGIN.worldY + v * (MOD_CHUNK / MAP_CHUNK);
+
+  const { lat: outLat, lng: outLng } = worldToLatLng(Xw_out, Yw_out);
+  return `https://wplace.live/?lat=${outLat}&lng=${outLng}&zoom=${outZoom}`;
+}
+
+function isWithinRoadMapBounds(urlStr) {
+  const { lat, lng } = parseWplaceURL(urlStr);
+  const withinLat = lat <= MAP_TOP_LEFT.lat && lat >= MAP_BOTTOM_RIGHT.lat;
+  const withinLng = lng >= MAP_TOP_LEFT.lng && lng <= MAP_BOTTOM_RIGHT.lng;
+  return withinLat && withinLng;
 }
