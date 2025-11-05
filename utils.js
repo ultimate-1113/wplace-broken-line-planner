@@ -248,3 +248,19 @@ function isWithinRoadMapBounds(urlStr) {
   const withinLng = lng >= MAP_TOP_LEFT.lng && lng <= MAP_BOTTOM_RIGHT.lng;
   return withinLat && withinLng;
 }
+
+const menuBtn = document.getElementById('menuBtn');
+const menuPanel = document.getElementById('menuPanel');
+
+menuBtn.addEventListener('click', () => {
+  menuPanel.classList.toggle('open');
+  menuBtn.classList.toggle('active');
+});
+
+// リンククリックで閉じる
+document.querySelectorAll('#menuPanel a').forEach(link => {
+  link.addEventListener('click', () => {
+    menuPanel.classList.remove('open');
+    menuBtn.classList.remove('active');
+  });
+});
