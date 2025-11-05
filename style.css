@@ -183,3 +183,29 @@ pre {
 .muted { color: var(--muted); text-align: center; margin: 0; }
 
 .details summary { cursor: pointer; }
+
+/* ===== Zoom入力欄の外観調整 ===== */
+input[type="number"] {
+  background-color: var(--app-bg, #0b0f1a); /* ページの背景色と統一 */
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 4px 6px;
+  width: 80px;
+}
+
+/* スピンボタン（上下矢印）を非表示にする */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox対応 */
+}
+
+/* フォーカス時の縁取りをやや明るく */
+input[type="number"]:focus {
+  outline: none;
+  border-color: #88c0ff;
+}

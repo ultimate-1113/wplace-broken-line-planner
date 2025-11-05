@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>wplace 洋上→現地URL変換</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <h1>wplace 洋上→現地URL変換ツール</h1>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="container">
+
+      <!-- 入力フォーム -->
+      <form id="convert-form" class="card">
+        <div class="field">
+          <label for="roadUrlInput">洋上地図のURLを入力</label>
+          <input id="roadUrlInput" name="roadUrl" type="url"
+                    placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
+        </div>
+
+        <div class="field">
+            <label for="zoomInput">ズーム値</label>
+            <input id="zoomInput" name="zoom" type="number" value="15"
+                    placeholder="15" inputmode="numeric" />
+        </div>
+
+
+        <button type="submit" class="primary">現地URLに変換する</button>
+      </form>
+
+      <!-- 結果表示 -->
+      <section id="result" class="card" hidden>
+        <h2>変換結果</h2>
+
+        <div class="result-grid">
+          <div class="box">
+            <h3>入力座標（洋上地図）</h3>
+            <pre id="inputCoord"></pre>
+          </div>
+
+          <div class="box">
+            <h3>出力座標（現地）</h3>
+            <pre id="outputCoord"></pre>
+            <a id="outputLink" class="link" target="_blank" rel="noopener">現地地図で開く</a>
+          </div>
+        </div>
+
+        <details class="details">
+          <summary>詳細</summary>
+          <pre id="debug"></pre>
+        </details>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container">
+      <p class="muted">© wplace沖ノ鳥島開発 技術部・道路公社</p>
+    </div>
+  </footer>
+
+  <script src="./utils.js"></script>
+  <script>
+    const form = document.getElementById('convert-form');
+    const resultSec = document.getElementById('result');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const roadUrl = document.getElementById('roadUrlInput').value.trim();
+      const zoomField = document.getElementById('zoomInput').value.trim();
+      const zoomVal = zoomField ? parseFloat(zoomField) : 15; // ← デフォルト15
+
+      try {
+        const { lat, lng } = parseWplaceURL(roadUrl);
+        const outUrl = roadUrlToWplaceUrl(roadUrl, zoomVal);
+
+        document.getElementById('inputCoord').textContent = `lat=${lat}\nlng=${lng}`;
+        const { lat: outLat, lng: outLng } = parseWplaceURL(outUrl);
+        document.getElementById('outputCoord').textContent = `lat=${outLat}\nlng=${outLng}`;
+        document.getElementById('outputLink').href = outUrl;
+
+        const src = llzToWorldPixel(lat, lng);
+        document.getElementById('debug').textContent =
+          `worldX=${src.worldX}\nworldY=${src.worldY}\nURL=${outUrl}`;
+
+        resultSec.hidden = false;
+      } catch (err) {
+        alert('変換エラー: ' + err.message);
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

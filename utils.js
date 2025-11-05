@@ -210,3 +210,41 @@ function buildDebugText(plan2) {
   ].join('\n');
 }
 
+// ===== 道路地図URL → wplace世界URL =====
+function roadUrlToWplaceUrl(roadUrl, outZoom = 15) {
+  // --- 入力検証 ---
+  const { lat, lng } = parseWplaceURL(roadUrl);
+  if (!isWithinRoadMapBounds(roadUrl)) {
+    throw new Error("入力URLは道路地図範囲外です。");
+  }
+
+  // --- 道路地図の世界座標を取得 ---
+  const { worldX: mapWorldX, worldY: mapWorldY } = llzToWorldPixel(lat, lng);
+
+  // --- 日付変更線の左側（西側）なら +MAP_SCALE シフト ---
+  let shiftedX = mapWorldX;
+  if (mapWorldX < ORIGIN.worldX) shiftedX += MAP_SCALE;
+
+  // --- ピクセル中心補正付きスケーリング（正方） ---
+  const ratio = SCALE / MAP_SCALE;          // ≈307.6923076923
+  const dx = (shiftedX - ORIGIN.worldX + 0.5) * ratio;
+  const dy = (mapWorldY - ORIGIN.worldY + 0.5) * ratio;
+
+  // --- world座標に変換（原点は web メルカトルの左上） ---
+  const worldX_out = dx;
+  const worldY_out = dy;
+
+  // --- 緯度経度へ変換 ---
+  const { lat: outLat, lng: outLng } = worldToLatLng(worldX_out, worldY_out);
+
+  // --- URLとして返す ---
+  return `https://wplace.live/?lat=${outLat}&lng=${outLng}&zoom=${outZoom}`;
+}
+
+// ===== 入力が道路地図範囲内か確認 =====
+function isWithinRoadMapBounds(urlStr) {
+  const { lat, lng } = parseWplaceURL(urlStr);
+  const withinLat = lat <= MAP_TOP_LEFT.lat && lat >= MAP_BOTTOM_RIGHT.lat;
+  const withinLng = lng >= MAP_TOP_LEFT.lng && lng <= MAP_BOTTOM_RIGHT.lng;
+  return withinLat && withinLng;
+}
