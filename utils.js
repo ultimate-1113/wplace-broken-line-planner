@@ -32,9 +32,14 @@ function parseWplaceURL(urlStr) {
 
 // ===== world(px) → 緯度経度 =====
 function worldToLatLng(worldX, worldY) {
-  const lng = (worldX / SCALE) * 360 - 180;
+  let lng = (worldX / SCALE) * 360 - 180;
   const n = Math.PI - 2 * Math.PI * (worldY / SCALE);
   const lat = (180 / Math.PI) * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+
+  // 経度の範囲を -180〜180 に正規化
+  if (lng > 180) lng -= 360;
+  else if (lng < -180) lng += 360;
+
   return { lat, lng };
 }
 
@@ -205,32 +210,3 @@ function buildDebugText(plan2) {
   ].join('\n');
 }
 
-function shiftWorldXForLocal(worldX) {
-  if (worldX < ORIGIN.worldX) worldX += MAP_SCALE;
-  return worldX;
-}
-
-function roadUrlToWplaceUrl(roadUrl, outZoom = 15) {
-  if (!isWithinRoadMapBounds(roadUrl))
-    throw new Error("入力URLは道路地図範囲外です。");
-
-  const { lat, lng } = parseWplaceURL(roadUrl);
-  let { worldX, worldY } = llzToWorldPixel(lat, lng);
-  const shiftedX = shiftWorldXForLocal(worldX);
-
-  const u = (shiftedX - ORIGIN.worldX) * (MAP_CHUNK / MOD_CHUNK);
-  const v = (worldY   - ORIGIN.worldY) * (MAP_CHUNK / MOD_CHUNK);
-
-  const Xw_out = ORIGIN.worldX + u * (MOD_CHUNK / MAP_CHUNK);
-  const Yw_out = ORIGIN.worldY + v * (MOD_CHUNK / MAP_CHUNK);
-
-  const { lat: outLat, lng: outLng } = worldToLatLng(Xw_out, Yw_out);
-  return `https://wplace.live/?lat=${outLat}&lng=${outLng}&zoom=${outZoom}`;
-}
-
-function isWithinRoadMapBounds(urlStr) {
-  const { lat, lng } = parseWplaceURL(urlStr);
-  const withinLat = lat <= MAP_TOP_LEFT.lat && lat >= MAP_BOTTOM_RIGHT.lat;
-  const withinLng = lng >= MAP_TOP_LEFT.lng && lng <= MAP_BOTTOM_RIGHT.lng;
-  return withinLat && withinLng;
-}
