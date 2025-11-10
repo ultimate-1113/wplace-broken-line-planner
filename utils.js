@@ -12,7 +12,7 @@ const MAP_CHUNK = 13;                 // 道路地図の1チャンク単位
 const MAP_SCALE = MAP_CHUNK * (2 ** ZOOM_BASE); // = 6656 map幅を world(px) に換算
 const ORIGIN = llzToWorldPixel(25.170344214459675, 137.55629849677734); // 左上原点
 const MAP_TOP_LEFT = { lat: 25.1662077952603, lng: 137.17010709052732 };
-const MAP_BOTTOM_RIGHT = { lat: 24.373758784675584, lng: 138.43133755927732 };
+const MAP_BOTTOM_RIGHT = { lat: 24.34653641609711, lng: 138.43151334052732 };
 
 // ===== URL → lat/lng 抽出 =====
 function parseWplaceURL(urlStr) {
