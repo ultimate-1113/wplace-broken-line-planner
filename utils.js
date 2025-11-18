@@ -13,6 +13,8 @@ const MAP_SCALE = MAP_CHUNK * (2 ** ZOOM_BASE); // = 6656 map幅を world(px) �
 const ORIGIN = llzToWorldPixel(25.170344214459675, 137.55629849677734); // 左上原点
 const MAP_TOP_LEFT = { lat: 25.1662077952603, lng: 137.17010709052732 };
 const MAP_BOTTOM_RIGHT = { lat: 24.34669656479751, lng: 138.43133755927732 };
+const WEST_INDIA_X = llzToWorldPixel(0, 66.0).worldX; 
+const EAST_INDIA_X = llzToWorldPixel(0, 88.5).worldX;
 
 // ===== URL → lat/lng 抽出 =====
 function parseWplaceURL(urlStr) {
@@ -264,3 +266,40 @@ document.querySelectorAll('#menuPanel a').forEach(link => {
     menuBtn.classList.remove('active');
   });
 });
+
+// ===== wplace世界URL → 道路地図URL（逆変換） =====
+function wplaceUrlToRoadUrls(urlStr, outZoom = 15) {
+  const { lat, lng } = parseWplaceURL(urlStr);
+  const { worldX: W, worldY: Z } = llzToWorldPixel(lat, lng);
+
+  // wplace → map 相似縮小
+  const bx = Math.floor(W * MAP_SCALE / SCALE);
+  const by = Math.floor(Z * MAP_SCALE / SCALE);
+
+  // インド区間の分岐ロジック
+  const candidates =
+    (W < WEST_INDIA_X)  ? [bx] :
+    (W < EAST_INDIA_X)  ? [bx, bx - MAP_SCALE] :
+                          [bx - MAP_SCALE];
+
+  const results = [];
+
+  for (const cx of candidates) {
+    // 地図上の world(px)
+    const rWorldX = ORIGIN.worldX + cx;
+    const rWorldY = ORIGIN.worldY + by;
+
+    const { lat: rLat, lng: rLng } = worldToLatLng(rWorldX, rWorldY);
+
+    // 地図に存在する緯度であることを確認
+    if (rLat > MAP_TOP_LEFT.lat || rLat < MAP_BOTTOM_RIGHT.lat) continue;
+
+    results.push(`https://wplace.live/?lat=${rLat}&lng=${rLng}&zoom=${outZoom}`);
+  }
+
+  if (!results.length) {
+    throw new Error("入力座標は道路地図に対応しません。");
+  }
+
+  return results;
+}
