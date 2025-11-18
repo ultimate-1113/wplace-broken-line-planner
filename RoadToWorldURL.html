@@ -35,8 +35,8 @@
       <div class="field">
         <label for="modeSelect">変換モード</label>
         <select id="modeSelect" name="mode">
-          <option value="forward" selected>洋上 → 現地（順方向）</option>
-          <option value="reverse">現地 → 洋上（逆方向）</option>
+          <option value="forward" selected>地図 → 現地</option>
+          <option value="reverse">現地 → 地図</option>
         </select>
       </div>
 
@@ -63,18 +63,29 @@
       <h2 id="resultTitle">変換結果</h2>
 
       <div class="result-grid">
-        <div class="box">
-          <h3>入力座標</h3>
-          <pre id="inputCoord"></pre>
-        </div>
-
-        <div class="box">
+          <div class="box">
+            <h3>入力座標</h3>
+            <pre id="inputCoord"></pre>
+          </div>
+        <!-- 既存の単一出力（1つのとき用） -->
+        <div class="box" id="singleBox">
           <h3>出力結果</h3>
           <pre id="outputCoord"></pre>
-
-          <!-- 順方向→単一リンク、逆方向→複数リンク -->
           <div id="outputLinks"></div>
         </div>
+        <!-- 二つあるとき用（右） -->
+        <div class="box" id="rightBox" style="display:none;">
+          <h3>出力結果（右側）</h3>
+          <pre id="outputCoord1"></pre>
+          <a id="outputLink1" class="link" target="_blank"></a>
+        </div>
+        <!-- 二つあるとき用（左） -->
+        <div class="box" id="leftBox" style="display:none;">
+          <h3>出力結果（左側）</h3>
+          <pre id="outputCoord2"></pre>
+          <a id="outputLink2" class="link" target="_blank"></a>
+        </div>
+
       </div>
 
       <details class="details">
@@ -112,17 +123,37 @@
       const { lat, lng } = parseWplaceURL(urlStr);
       document.getElementById('inputCoord').textContent = `lat=${lat}\nlng=${lng}`;
 
+      // ボックス要素
+      const singleBox = document.getElementById('singleBox');
+      const rightBox  = document.getElementById('rightBox');
+      const leftBox   = document.getElementById('leftBox');
+
       const outputLinks = document.getElementById('outputLinks');
       const outputPre = document.getElementById('outputCoord');
+
+      const oc1 = document.getElementById('outputCoord1');
+      const oc2 = document.getElementById('outputCoord2');
+      const link1 = document.getElementById('outputLink1');
+      const link2 = document.getElementById('outputLink2');
+
+      // 初期化
+      singleBox.style.display = "none";
+      rightBox.style.display = "none";
+      leftBox.style.display = "none";
       outputLinks.innerHTML = "";
       outputPre.textContent = "";
+      oc1.textContent = "";
+      oc2.textContent = "";
+      link1.textContent = "";
+      link2.textContent = "";
 
       // ===== 順方向：洋上 → 現地 =====
       if (mode === "forward") {
         const outUrl = roadUrlToWplaceUrl(urlStr, zoomVal);
         const { lat: OL, lng: OG } = parseWplaceURL(outUrl);
 
-        document.getElementById('resultTitle').textContent = "変換結果（洋上 → 現地）";
+        singleBox.style.display = "block";
+        document.getElementById('resultTitle').textContent = "変換結果（地図 → 現地）";
         outputPre.textContent = `lat=${OL}\nlng=${OG}`;
 
         const a = document.createElement("a");
@@ -141,23 +172,48 @@
       // ===== 逆方向：現地 → 洋上 =====
       else {
         const results = wplaceUrlToRoadUrls(urlStr, zoomVal);
+        document.getElementById('resultTitle').textContent = "変換結果（現地 → 地図）";
 
-        document.getElementById('resultTitle').textContent = "変換結果（現地 → 洋上）";
-        outputPre.textContent = results.join("\n");
+        // ---- 候補が1件の場合：既存の1枠表示 ----
+        if (results.length === 1) {
+          const r = results[0];
+          const { lat: rl, lng: rg } = parseWplaceURL(r);
 
-        for (const r of results) {
+          singleBox.style.display = "block";
+          outputPre.textContent = `lat=${rl}\nlng=${rg}`;
+
           const a = document.createElement("a");
           a.href = r;
           a.textContent = "⇒ 洋上地図で開く";
           a.target = "_blank";
           a.className = "link";
           outputLinks.appendChild(a);
-          outputLinks.appendChild(document.createElement("br"));
         }
 
+        // ---- 候補が2件：右・左に分けて表示 ----
+        else if (results.length === 2) {
+          // 右側（候補1）
+          const r1 = results[0];
+          const { lat: r1lat, lng: r1lng } = parseWplaceURL(r1);
+          rightBox.style.display = "block";
+          oc1.textContent = `lat=${r1lat}\nlng=${r1lng}`;
+          link1.href = r1;
+          link1.textContent = "⇒ 道路地図(右)をwplaceで開く";
+
+          // 左側（候補2）
+          const r2 = results[1];
+          const { lat: r2lat, lng: r2lng } = parseWplaceURL(r2);
+          leftBox.style.display = "block";
+          oc2.textContent = `lat=${r2lat}\nlng=${r2lng}`;
+          link2.href = r2;
+          link2.textContent = "⇒ 道路地図(左)をwplaceで開く";
+        }
+
+        // ---- 詳細（worldX/Y → URLの順） ----
         const src = llzToWorldPixel(lat, lng);
-        document.getElementById('debug').textContent =
-          `worldX=${src.worldX}\nworldY=${src.worldY}\n候補=${results.length}件`;
+        let dbg = `worldX=${src.worldX}\nworldY=${src.worldY}\n`;
+        results.forEach((r, i) => dbg += `URL${i+1}=${r}\n`);
+        document.getElementById('debug').textContent = dbg;
       }
 
       resultSec.hidden = false;
