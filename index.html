@@ -88,6 +88,12 @@
 
   <!-- ===== スクリプト ===== -->
   <script src="./utils.js"></script>
-
+  
+  <script>
+    // index.html → /home の表示にする（必要ならONのままでOK）
+    document.addEventListener("DOMContentLoaded", () => {
+      window.history.replaceState(null, "", "/home");
+    });
+  </script>
 </body>
 </html>
