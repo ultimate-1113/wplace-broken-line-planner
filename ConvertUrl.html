@@ -237,16 +237,5 @@
       }
     });
   </script>
-  <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const path = window.location.pathname;
-
-        // .html を含むURLなら、.html を消したものにアドレスバーだけ書き換える
-        if (path.endsWith(".html")) {
-          const clean = path.replace(/\.html$/, "");
-          window.history.replaceState(null, "", clean);
-        }
-      });
-    </script>
 </body>
 </html>
