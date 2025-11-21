@@ -8,222 +8,231 @@
 </head>
 
 <body>
+  <header class="app-header">
+    <div class="header-inner">
+      <h1>wplace URL 変換ツール</h1>
+      <button id="menuBtn" class="menu-btn">☰</button>
+    </div>
+  </header>
 
-<header class="app-header">
-  <div class="header-inner">
-    <h1>wplace URL 変換ツール</h1>
-    <button id="menuBtn" class="menu-btn">☰</button>
-  </div>
-</header>
+  <nav id="menuPanel" class="menu-panel">
+    <ul>
+      <li><a href="./ConvertUrl.html">URL変換ツール</a></li>
+      <li><a href="./planPolyline.html">折れ点プランナー</a></li>
+    </ul>
+  </nav>
 
-<nav id="menuPanel" class="menu-panel">
-  <ul>
-    <li><a href="./planPolyline.html">折れ点プランナー</a></li>
-    <li><a href="./ConvertUrl.html">URL変換ツール</a></li>
-  </ul>
-</nav>
+  <main class="app-main">
+    <div class="container">
 
-<main class="app-main">
-  <div class="container">
+      <!-- ========================= -->
+      <!--        共通フォーム        -->
+      <!-- ========================= -->
+      <form id="convert-form" class="card">
 
-    <!-- ========================= -->
-    <!--        共通フォーム        -->
-    <!-- ========================= -->
-    <form id="convert-form" class="card">
+        <!-- 1段目：モード＋ズーム -->
+        <div class="field">
+          <label for="modeSelect">変換モード</label>
+          <select id="modeSelect" name="mode">
+            <option value="forward" selected>地図 → 現地</option>
+            <option value="reverse">現地 → 地図</option>
+          </select>
+        </div>
 
-      <!-- 1段目：モード＋ズーム -->
-      <div class="field">
-        <label for="modeSelect">変換モード</label>
-        <select id="modeSelect" name="mode">
-          <option value="forward" selected>地図 → 現地</option>
-          <option value="reverse">現地 → 地図</option>
-        </select>
-      </div>
+        <div class="field">
+          <label for="zoomInput">ズーム値</label>
+          <input id="zoomInput" type="number" value="15" inputmode="numeric" />
+        </div>
 
-      <div class="field">
-        <label for="zoomInput">ズーム値</label>
-        <input id="zoomInput" type="number" value="15" inputmode="numeric" />
-      </div>
+        <!-- 2段目：URL 入力（共通） -->
+        <div class="field">
+          <label for="urlInput">URL を入力</label>
+          <input id="urlInput" name="url" type="url"
+                placeholder="https://wplace.live/?lat=...&lng=..." required />
+        </div>
 
-      <!-- 2段目：URL 入力（共通） -->
-      <div class="field">
-        <label for="urlInput">URL を入力</label>
-        <input id="urlInput" name="url" type="url"
-               placeholder="https://wplace.live/?lat=...&lng=..." required />
-      </div>
-
-      <button type="submit" class="primary">変換する</button>
-    </form>
+        <button type="submit" class="primary">変換する</button>
+      </form>
 
 
-    <!-- ========================= -->
-    <!--        結果表示領域        -->
-    <!-- ========================= -->
-    <section id="result" class="card" hidden>
-      <h2 id="resultTitle">変換結果</h2>
+      <!-- ========================= -->
+      <!--        結果表示領域        -->
+      <!-- ========================= -->
+      <section id="result" class="card" hidden>
+        <h2 id="resultTitle">変換結果</h2>
 
-      <div class="result-grid">
-          <div class="box">
-            <h3>入力座標</h3>
-            <pre id="inputCoord"></pre>
+        <div class="result-grid">
+            <div class="box">
+              <h3>入力座標</h3>
+              <pre id="inputCoord"></pre>
+            </div>
+          <!-- 既存の単一出力（1つのとき用） -->
+          <div class="box" id="singleBox">
+            <h3>出力結果</h3>
+            <pre id="outputCoord"></pre>
+            <div id="outputLinks"></div>
           </div>
-        <!-- 既存の単一出力（1つのとき用） -->
-        <div class="box" id="singleBox">
-          <h3>出力結果</h3>
-          <pre id="outputCoord"></pre>
-          <div id="outputLinks"></div>
-        </div>
-        <!-- 二つあるとき用（右） -->
-        <div class="box" id="rightBox" style="display:none;">
-          <h3>出力結果（右側）</h3>
-          <pre id="outputCoord1"></pre>
-          <a id="outputLink1" class="link" target="_blank"></a>
-        </div>
-        <!-- 二つあるとき用（左） -->
-        <div class="box" id="leftBox" style="display:none;">
-          <h3>出力結果（左側）</h3>
-          <pre id="outputCoord2"></pre>
-          <a id="outputLink2" class="link" target="_blank"></a>
+          <!-- 二つあるとき用（右） -->
+          <div class="box" id="rightBox" style="display:none;">
+            <h3>出力結果（右側）</h3>
+            <pre id="outputCoord1"></pre>
+            <a id="outputLink1" class="link" target="_blank"></a>
+          </div>
+          <!-- 二つあるとき用（左） -->
+          <div class="box" id="leftBox" style="display:none;">
+            <h3>出力結果（左側）</h3>
+            <pre id="outputCoord2"></pre>
+            <a id="outputLink2" class="link" target="_blank"></a>
+          </div>
+
         </div>
 
-      </div>
+        <details class="details">
+          <summary>詳細</summary>
+          <pre id="debug"></pre>
+        </details>
+      </section>
 
-      <details class="details">
-        <summary>詳細</summary>
-        <pre id="debug"></pre>
-      </details>
-    </section>
+    </div>
+  </main>
 
-  </div>
-</main>
-
-<footer class="app-footer">
-  <div class="container">
-    <p class="muted">© wplace沖ノ鳥島開発 技術部・道路公社</p>
-  </div>
-</footer>
+  <footer class="app-footer">
+    <div class="container">
+      <p class="muted">© wplace沖ノ鳥島開発 技術部・道路公社</p>
+    </div>
+  </footer>
 
 
-<!-- ========================= -->
-<!--        JavaScript         -->
-<!-- ========================= -->
-<script src="./utils.js"></script>
-<script>
-  const form = document.getElementById('convert-form');
-  const resultSec = document.getElementById('result');
+  <!-- ========================= -->
+  <!--        JavaScript         -->
+  <!-- ========================= -->
+  <script src="./utils.js"></script>
+  <script>
+    const form = document.getElementById('convert-form');
+    const resultSec = document.getElementById('result');
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
 
-    const mode = document.getElementById('modeSelect').value;
-    const urlStr = document.getElementById('urlInput').value.trim();
-    const zoomVal = parseFloat(document.getElementById('zoomInput').value) || 15;
+      const mode = document.getElementById('modeSelect').value;
+      const urlStr = document.getElementById('urlInput').value.trim();
+      const zoomVal = parseFloat(document.getElementById('zoomInput').value) || 15;
 
-    try {
-      const { lat, lng } = parseWplaceURL(urlStr);
-      document.getElementById('inputCoord').textContent = `lat=${lat}\nlng=${lng}`;
+      try {
+        const { lat, lng } = parseWplaceURL(urlStr);
+        document.getElementById('inputCoord').textContent = `lat=${lat}\nlng=${lng}`;
 
-      // ボックス要素
-      const singleBox = document.getElementById('singleBox');
-      const rightBox  = document.getElementById('rightBox');
-      const leftBox   = document.getElementById('leftBox');
+        // ボックス要素
+        const singleBox = document.getElementById('singleBox');
+        const rightBox  = document.getElementById('rightBox');
+        const leftBox   = document.getElementById('leftBox');
 
-      const outputLinks = document.getElementById('outputLinks');
-      const outputPre = document.getElementById('outputCoord');
+        const outputLinks = document.getElementById('outputLinks');
+        const outputPre = document.getElementById('outputCoord');
 
-      const oc1 = document.getElementById('outputCoord1');
-      const oc2 = document.getElementById('outputCoord2');
-      const link1 = document.getElementById('outputLink1');
-      const link2 = document.getElementById('outputLink2');
+        const oc1 = document.getElementById('outputCoord1');
+        const oc2 = document.getElementById('outputCoord2');
+        const link1 = document.getElementById('outputLink1');
+        const link2 = document.getElementById('outputLink2');
 
-      // 初期化
-      singleBox.style.display = "none";
-      rightBox.style.display = "none";
-      leftBox.style.display = "none";
-      outputLinks.innerHTML = "";
-      outputPre.textContent = "";
-      oc1.textContent = "";
-      oc2.textContent = "";
-      link1.textContent = "";
-      link2.textContent = "";
+        // 初期化
+        singleBox.style.display = "none";
+        rightBox.style.display = "none";
+        leftBox.style.display = "none";
+        outputLinks.innerHTML = "";
+        outputPre.textContent = "";
+        oc1.textContent = "";
+        oc2.textContent = "";
+        link1.textContent = "";
+        link2.textContent = "";
 
-      // ===== 順方向：洋上 → 現地 =====
-      if (mode === "forward") {
-        const outUrl = roadUrlToWplaceUrl(urlStr, zoomVal);
-        const { lat: OL, lng: OG } = parseWplaceURL(outUrl);
-
-        singleBox.style.display = "block";
-        document.getElementById('resultTitle').textContent = "変換結果（地図 → 現地）";
-        outputPre.textContent = `lat=${OL}\nlng=${OG}`;
-
-        const a = document.createElement("a");
-        a.href = outUrl;
-        a.textContent = "⇒ 現地をwplaceで開く";
-        a.target = "_blank";
-        a.className = "link";
-        outputLinks.appendChild(a);
-
-        const src = llzToWorldPixel(lat, lng);
-        document.getElementById('debug').textContent =
-          `worldX=${src.worldX}\nworldY=${src.worldY}\nURL=${outUrl}`;
-      }
-
-
-      // ===== 逆方向：現地 → 洋上 =====
-      else {
-        const results = wplaceUrlToRoadUrls(urlStr, zoomVal);
-        document.getElementById('resultTitle').textContent = "変換結果（現地 → 地図）";
-
-        // ---- 候補が1件の場合：既存の1枠表示 ----
-        if (results.length === 1) {
-          const r = results[0];
-          const { lat: rl, lng: rg } = parseWplaceURL(r);
+        // ===== 順方向：洋上 → 現地 =====
+        if (mode === "forward") {
+          const outUrl = roadUrlToWplaceUrl(urlStr, zoomVal);
+          const { lat: OL, lng: OG } = parseWplaceURL(outUrl);
 
           singleBox.style.display = "block";
-          outputPre.textContent = `lat=${rl}\nlng=${rg}`;
+          document.getElementById('resultTitle').textContent = "変換結果（地図 → 現地）";
+          outputPre.textContent = `lat=${OL}\nlng=${OG}`;
 
           const a = document.createElement("a");
-          a.href = r;
-          a.textContent = "⇒ 道路地図をwplaceで開く";
+          a.href = outUrl;
+          a.textContent = "⇒ 現地をwplaceで開く";
           a.target = "_blank";
           a.className = "link";
           outputLinks.appendChild(a);
+
+          const src = llzToWorldPixel(lat, lng);
+          document.getElementById('debug').textContent =
+            `worldX=${src.worldX}\nworldY=${src.worldY}\nURL=${outUrl}`;
         }
 
-        // ---- 候補が2件：右・左に分けて表示 ----
-        else if (results.length === 2) {
-          // 右側（候補1）
-          const r1 = results[0];
-          const { lat: r1lat, lng: r1lng } = parseWplaceURL(r1);
-          rightBox.style.display = "block";
-          oc1.textContent = `lat=${r1lat}\nlng=${r1lng}`;
-          link1.href = r1;
-          link1.textContent = "⇒ 道路地図(右)をwplaceで開く";
 
-          // 左側（候補2）
-          const r2 = results[1];
-          const { lat: r2lat, lng: r2lng } = parseWplaceURL(r2);
-          leftBox.style.display = "block";
-          oc2.textContent = `lat=${r2lat}\nlng=${r2lng}`;
-          link2.href = r2;
-          link2.textContent = "⇒ 道路地図(左)をwplaceで開く";
+        // ===== 逆方向：現地 → 洋上 =====
+        else {
+          const results = wplaceUrlToRoadUrls(urlStr, zoomVal);
+          document.getElementById('resultTitle').textContent = "変換結果（現地 → 地図）";
+
+          // ---- 候補が1件の場合：既存の1枠表示 ----
+          if (results.length === 1) {
+            const r = results[0];
+            const { lat: rl, lng: rg } = parseWplaceURL(r);
+
+            singleBox.style.display = "block";
+            outputPre.textContent = `lat=${rl}\nlng=${rg}`;
+
+            const a = document.createElement("a");
+            a.href = r;
+            a.textContent = "⇒ 道路地図をwplaceで開く";
+            a.target = "_blank";
+            a.className = "link";
+            outputLinks.appendChild(a);
+          }
+
+          // ---- 候補が2件：右・左に分けて表示 ----
+          else if (results.length === 2) {
+            // 右側（候補1）
+            const r1 = results[0];
+            const { lat: r1lat, lng: r1lng } = parseWplaceURL(r1);
+            rightBox.style.display = "block";
+            oc1.textContent = `lat=${r1lat}\nlng=${r1lng}`;
+            link1.href = r1;
+            link1.textContent = "⇒ 道路地図(右)をwplaceで開く";
+
+            // 左側（候補2）
+            const r2 = results[1];
+            const { lat: r2lat, lng: r2lng } = parseWplaceURL(r2);
+            leftBox.style.display = "block";
+            oc2.textContent = `lat=${r2lat}\nlng=${r2lng}`;
+            link2.href = r2;
+            link2.textContent = "⇒ 道路地図(左)をwplaceで開く";
+          }
+
+          // ---- 詳細（worldX/Y → URLの順） ----
+          const src = llzToWorldPixel(lat, lng);
+          let dbg = `worldX=${src.worldX}\nworldY=${src.worldY}\n`;
+          results.forEach((r, i) => dbg += `URL${i+1}=${r}\n`);
+          document.getElementById('debug').textContent = dbg;
         }
 
-        // ---- 詳細（worldX/Y → URLの順） ----
-        const src = llzToWorldPixel(lat, lng);
-        let dbg = `worldX=${src.worldX}\nworldY=${src.worldY}\n`;
-        results.forEach((r, i) => dbg += `URL${i+1}=${r}\n`);
-        document.getElementById('debug').textContent = dbg;
+        resultSec.hidden = false;
+
+      } catch (err) {
+        alert("変換エラー: " + err.message);
+        console.error(err);
       }
+    });
+  </script>
+  <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const path = window.location.pathname;
 
-      resultSec.hidden = false;
-
-    } catch (err) {
-      alert("変換エラー: " + err.message);
-      console.error(err);
-    }
-  });
-</script>
-
+        // .html を含むURLなら、.html を消したものにアドレスバーだけ書き換える
+        if (path.endsWith(".html")) {
+          const clean = path.replace(/\.html$/, "");
+          window.history.replaceState(null, "", clean);
+        }
+      });
+    </script>
 </body>
 </html>

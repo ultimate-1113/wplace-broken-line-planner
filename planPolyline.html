@@ -18,10 +18,10 @@
   </header>
   
     <nav id="menuPanel" class="menu-panel">
-        <ul>
-            <li><a href="./planPolyline.html">折れ点プランナー</a></li>
-            <li><a href="./ConvertUrl.html">URL変換ツール</a></li>
-        </ul>
+      <ul>
+        <li><a href="./ConvertUrl.html">URL変換ツール</a></li>
+        <li><a href="./planPolyline.html">折れ点プランナー</a></li>
+      </ul>
     </nav>
 
     <main class="app-main">
@@ -195,6 +195,17 @@
       } catch (err) {
         alert('URLの解析または計算でエラー: ' + err.message);
         console.error(err);
+      }
+    });
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const path = window.location.pathname;
+
+      // .html を含むURLなら、.html を消したものにアドレスバーだけ書き換える
+      if (path.endsWith(".html")) {
+        const clean = path.replace(/\.html$/, "");
+        window.history.replaceState(null, "", clean);
       }
     });
   </script>
