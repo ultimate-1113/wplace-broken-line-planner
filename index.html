@@ -1,22 +1,93 @@
 <!doctype html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0; URL=./ConvertUrl.html">
-    <script>location.replace("./ConvertUrl.html");</script>
-    <!-- Cloudflare Web Analytics -->
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d6bd2c0d2fca4165b0b5faa0d853c779"}'>
-    </script>
-    <!-- End Cloudflare Web Analytics -->
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FSQYW6S77K"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>wplace作業支援ツール</title>
 
-      gtag('config', 'G-FSQYW6S77K');
-    </script>
-    </script>
-  </head>
+  <link rel="stylesheet" href="./style.css" />
+  <!-- Cloudflare Web Analytics -->
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d6bd2c0d2fca4165b0b5faa0d853c779"}'></script>
+  <!-- Google tag -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FSQYW6S77K"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-FSQYW6S77K');
+  </script>
+</head>
+
+<body>
+
+  <!-- ===== 固定ヘッダー ===== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <h1>wplaceツール</h1>
+      <button id="menuBtn" class="menu-btn">☰</button>
+    </div>
+  </header>
+
+  <!-- ===== メニュー ===== -->
+  <nav id="menuPanel" class="menu-panel">
+    <ul>
+      <li><a href="./index.html">ホーム</a></li>
+      <li><a href="./ConvertUrl.html">URL変換ツール</a></li>
+      <li><a href="./planPolyline.html">折れ点プランナー</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== メイン ===== -->
+  <main class="app-main">
+    <div class="container">
+
+      <section class="card" style="padding: 20px;">
+        <h2>RC Tools へようこそ</h2>
+        <p>
+          RC Tools は wplace の道路地図作業を効率化するためのツール集です。<br>
+          必要なツールを選んでご利用ください。
+        </p>
+
+        <!-- ===== ツール一覧 ===== -->
+        <div class="tool-list" style="margin-top: 20px;">
+
+          <!-- URL変換ツール -->
+          <div class="tool-item" style="margin-bottom: 30px;">
+            <h3>道路地図 URL 変換ツール</h3>
+            <p>wplace道路地図のURLを簡単に変換できます。</p>
+            <a href="./ConvertUrl.html">
+              <button class="primary" style="width: 100%; margin-top: 10px;">
+                開く
+              </button>
+            </a>
+          </div>
+
+          <!-- 折れ点プランナー -->
+          <div class="tool-item">
+            <h3>折れ点プランナー</h3>
+            <p>複数の座標から道路の折れ点を自動計算できます。</p>
+            <a href="./planPolyline.html">
+              <button class="primary" style="width: 100%; margin-top: 10px;">
+                開く
+              </button>
+            </a>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="app-footer">
+    <div class="container">
+      <p class="muted">© wplace沖ノ鳥島開発 技術部・道路公社</p>
+    </div>
+  </footer>
+
+  <!-- ===== スクリプト ===== -->
+  <script src="./utils.js"></script>
+
+</body>
 </html>
