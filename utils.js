@@ -13,9 +13,8 @@ const MAP_SCALE = MAP_CHUNK * (2 ** ZOOM_BASE); // = 6656 map幅を world(px) �
 const ORIGIN = llzToWorldPixel(25.170344214459675, 137.55629849677734); // 左上原点
 const MAP_TOP_LEFT = { lat: 25.1662077952603, lng: 137.17010709052732 };
 const MAP_BOTTOM_RIGHT = { lat: 24.34669656479751, lng: 138.43133755927732 };
-const WEST_INDIA_X = llzToWorldPixel(0, 66.0).worldX; 
-const EAST_INDIA_X = llzToWorldPixel(0, 88.5).worldX;
-
+const WEST_INDIA_X = llzToWorldPixel(0, 61.171962559277304).worldX; //https://wplace.live/?lat=25.163980434496008&lng=61.171962559277304&zoom=15
+const EAST_INDIA_X = llzToWorldPixel(0, 89.29696255927732).worldX; //https://wplace.live/?lat=21.81883150101222&lng=89.29696255927732&zoom=15
 // ===== URL → lat/lng 抽出 =====
 function parseWplaceURL(urlStr) {
   let url;
