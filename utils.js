@@ -302,3 +302,35 @@ function wplaceUrlToRoadUrls(urlStr, outZoom = 15) {
 
   return results;
 }
+
+/* -----------------------------------------------------
+     * map座標（標準表示）3桁固定
+     * ----------------------------------------------------- */
+    function summarizeMap(pxInfo) {
+    const c4 = toLocal(pxInfo.worldX, pxInfo.worldY, 4000);
+    const mapX = (c4.x * 13 / 4000).toFixed(3);
+    const mapY = (c4.y * 13 / 4000).toFixed(3);
+    return `(${mapX}, ${mapY})`;
+    }
+
+    /* -----------------------------------------------------
+     * 詳細表示（世界座標整数版）
+     * ----------------------------------------------------- */
+    function summarizePointDetailed(label, pxInfo) {
+    const x = Math.round(pxInfo.worldX);
+    const y = Math.round(pxInfo.worldY);
+
+    const c4 = toLocal(pxInfo.worldX, pxInfo.worldY, 4000);
+    const t1 = toLocal(pxInfo.worldX, pxInfo.worldY, 1000);
+
+    const mapX = (c4.x * 13 / 4000).toFixed(3);
+    const mapY = (c4.y * 13 / 4000).toFixed(3);
+
+    return [
+        `＜${label}＞`,
+        `world(px): (${x}, ${y})`,
+        `チャンク: [${c4.chunkX}, ${c4.chunkY}] (${c4.x}, ${c4.y})`,
+        `タイル:   [${t1.chunkX}, ${t1.chunkY}] (${t1.x}, ${t1.y})`,
+        `map座標: (${mapX}, ${mapY})`
+    ].join("\n");
+    }

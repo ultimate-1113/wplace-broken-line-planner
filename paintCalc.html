@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>wplace ペイント計算ツール</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+
+  <!-- ===== ヘッダー ===== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <h1>ペイント計算ツール</h1>
+      <button id="menuBtn" class="menu-btn">☰</button>
+    </div>
+  </header>
+
+  <!-- ===== メニュー ===== -->
+  <nav id="menuPanel" class="menu-panel">
+    <ul>
+      <li><a href="./">ホーム</a></li>
+      <li><a href="./ConvertUrl">URL変換ツール</a></li>
+      <li><a href="./planPolyline">折れ点プランナー</a></li>
+      <li><a href="./paintCalc">ペイント量計算ツール</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== メイン ===== -->
+  <main class="app-main">
+    <div class="container">
+
+      <!-- 入力フォーム -->
+      <form id="paint-form" class="card">
+        <div class="field">
+          <label for="startUrlInput">地点1 URL</label>
+          <input id="startUrlInput" type="url"
+                 placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
+        </div>
+
+        <div class="field">
+          <label for="endUrlInput">地点2 URL</label>
+          <input id="endUrlInput" type="url"
+                 placeholder="https://wplace.live/?lat=...&lng=...&zoom=..." required />
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="roadWidth">道路幅(px)</label>
+            <input id="roadWidth" type="number" min="1" step="1" value="5" required />
+          </div>
+
+          <div class="field">
+            <label for="overlapWidth">重ね幅</label>
+            <select id="overlapWidth">
+              <option value="0">0</option>
+              <option value="1" selected>1</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="primary">計算する</button>
+      </form>
+
+      <!-- ===== 結果 ===== -->
+      <section id="result" class="card" hidden>
+        <h2>結果</h2>
+
+        <div class="result-grid">
+
+          <!-- XY差分 -->
+          <div class="box">
+            <h3>XY差分（world px）</h3>
+            <pre id="deltaXY"></pre>
+          </div>
+
+          <!-- 必要ペイント -->
+          <div class="box">
+            <h3>必要ペイント(px)</h3>
+            <pre id="requiredPx"></pre>
+          </div>
+
+          <!-- map座標（地点1・地点2まとめ） -->
+          <div class="box">
+            <h3>map座標</h3>
+            <pre id="mapBoth"></pre>
+          </div>
+
+        </div>
+
+        <details class="details">
+          <summary>詳細</summary>
+          <pre id="debug"></pre>
+        </details>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ===== フッター ===== -->
+  <footer class="app-footer">
+    <div class="container">
+      <p class="muted">© wplace沖ノ鳥島開発 技術部・道路公社</p>
+    </div>
+  </footer>
+
+
+  <!-- ===== util.js 読み込み ===== -->
+  <script src="./utils.js"></script>
+  <script>
+    /* -----------------------------------------------------
+     * メイン処理
+     * ----------------------------------------------------- */
+    const form = document.getElementById("paint-form");
+    const resultSec = document.getElementById("result");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const url1 = document.getElementById("startUrlInput").value.trim();
+      const url2 = document.getElementById("endUrlInput").value.trim();
+      const roadWidth = parseInt(document.getElementById("roadWidth").value, 10);
+      const overlapWidth = parseInt(document.getElementById("overlapWidth").value, 10);
+
+      try {
+        const p1 = llzToWorldPixel(...Object.values(parseWplaceURL(url1)));
+        const p2 = llzToWorldPixel(...Object.values(parseWplaceURL(url2)));
+
+        const dx = Math.round(Math.abs(p2.worldX - p1.worldX));
+        const dy = Math.round(Math.abs(p2.worldY - p1.worldY));
+
+        const longAxis  = Math.max(dx, dy);
+        const shortAxis = Math.min(dx, dy);
+
+        // 必px = (長い − 1) * (道路幅) + 短い * 重ね幅
+        const requiredPx =
+          (longAxis - 1) * (roadWidth) +
+          shortAxis * overlapWidth;
+
+        // ===== 標準表示 =====
+        document.getElementById("deltaXY").textContent =
+          `dx = ${dx} px\ndy = ${dy} px`;
+
+        document.getElementById("requiredPx").textContent =
+          `${requiredPx} px`;
+
+        document.getElementById("mapBoth").textContent =
+          `地点1 map座標: ${summarizeMap(p1)}\n` +
+          `地点2 map座標: ${summarizeMap(p2)}`;
+
+        // ===== 詳細 =====
+        document.getElementById("debug").textContent =
+          summarizePointDetailed("地点1", p1) + "\n\n" +
+          summarizePointDetailed("地点2", p2) + "\n\n" +
+          `道路幅 = ${roadWidth}\n重ね幅 = ${overlapWidth}`;
+
+        resultSec.hidden = false;
+
+      } catch (err) {
+        alert("URL解析エラー: " + err.message);
+        console.error(err);
+      }
+    });
+
+  </script>
+
+</body>
+</html>
