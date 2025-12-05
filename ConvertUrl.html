@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="wplace の道路地図URLと現地URLを相互変換できるツールです。座標の解析やズーム値の調整にも対応しています。">
   <title>wplace 道路地図URL変換ツール</title>
   <link rel="canonical" href="https://rc-tools.wplaceoki.com/ConvertUrl">
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="preload" href="./style.css" as="style">
+  <link rel="stylesheet" href="./style.css">
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d6bd2c0d2fca4165b0b5faa0d853c779"}'>
   </script>
@@ -122,7 +124,7 @@
   <!-- ========================= -->
   <!--        JavaScript         -->
   <!-- ========================= -->
-  <script src="./utils.js"></script>
+  <script src="./utils.js" defer></script>
   <script>
     const form = document.getElementById('convert-form');
     const resultSec = document.getElementById('result');

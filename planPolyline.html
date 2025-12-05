@@ -4,9 +4,11 @@
   <meta charset="utf-8" />
   <!-- Safe Area 対応 -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="wplace 上の始点と終点のURLから、最適な折れ点と傾きを自動計算できる折れ点プランナーです。道路の折れ位置・チャンク座標・傾斜を算出し、wplaceで開けるリンクも生成します。">
   <title>wplace 折れ点プランナー</title>
   <link rel="canonical" href="https://rc-tools.wplaceoki.com/planPolyline">
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="preload" href="./style.css" as="style">
+  <link rel="stylesheet" href="./style.css">
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d6bd2c0d2fca4165b0b5faa0d853c779"}'></script>
   <!-- End Cloudflare Web Analytics -->
@@ -126,7 +128,7 @@
   </footer>
 
   <!-- ===== スクリプト ===== -->
-  <script src="./utils.js"></script>
+  <script src="./utils.js" defer></script>
   <script>
     const form = document.getElementById('plan-form');
     const resultSec = document.getElementById('result');

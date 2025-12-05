@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="wplace の2地点のURLから距離差分を計算し、必要なペイント量(px)を求めるツールです。道路幅や重ね幅を指定して正確な必要ピクセル数を算出できます。">
   <title>wplace ペイント計算ツール</title>
   <link rel="canonical" href="https://rc-tools.wplaceoki.com/paintCalc">
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="preload" href="./style.css" as="style">
+  <link rel="stylesheet" href="./style.css">
   <!-- Cloudflare Web Analytics -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d6bd2c0d2fca4165b0b5faa0d853c779"}'></script>
   <!-- Google tag -->
@@ -122,7 +124,7 @@
 
 
   <!-- ===== util.js 読み込み ===== -->
-  <script src="./utils.js"></script>
+  <script src="./utils.js" defer></script>
   <script>
     /* -----------------------------------------------------
      * メイン処理
